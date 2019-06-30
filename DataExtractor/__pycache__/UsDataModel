@@ -1,0 +1,125 @@
+
+cmplid,odino,mfrname,maketxt,modeltxt,yeartxt,crash,faildate,fire,injured,deaths,compdesc,city,state,vin,datea,ldate,miles,occurences,cdescr,cmpltype,policerptyn,purchdt,origowneryn,antibrakesyn,cruisecontyn,numcyls,drivetrain,fuelsys,fueltype,transtype,vehspeed,dot,tiresize,locoftire,tirefailtype,origequipyn,manufdt,seattype,restrainttype,dealername,dealertel,dealercity,dealerstate,dealerzip,prodtype,repairedyn2,medicalattn,vehiclestowedyn
+ cmplid bigint,
+    odino bigint,
+    mfrname text COLLATE pg_catalog."default",
+    maketxt text COLLATE pg_catalog."default",
+    modeltxt text COLLATE pg_catalog."default",
+    yeartxt bigint,
+    crash text COLLATE pg_catalog."default",
+    faildate double precision,
+    fire text COLLATE pg_catalog."default",
+    injured bigint,
+    deaths bigint,
+    compdesc text COLLATE pg_catalog."default",
+    city text COLLATE pg_catalog."default",
+    state text COLLATE pg_catalog."default",
+    vin text COLLATE pg_catalog."default",
+    datea bigint,
+    ldate bigint,
+    miles double precision,
+    occurences double precision,
+    cdescr text COLLATE pg_catalog."default",
+    cmpltype text COLLATE pg_catalog."default",
+    policerptyn double precision,
+    purchdt double precision,
+    origowneryn double precision,
+    antibrakesyn double precision,
+    cruisecontyn double precision,
+    numcyls double precision,
+    drivetrain double precision,
+    fuelsys double precision,
+    fueltype double precision,
+    transtype double precision,
+    vehspeed double precision,
+    dot double precision,
+    tiresize double precision,
+    locoftire double precision,
+    tirefailtype double precision,
+    origequipyn double precision,
+    manufdt double precision,
+    seattype double precision,
+    restrainttype double precision,
+    dealername double precision,
+    dealertel double precision,
+    dealercity double precision,
+    dealerstate double precision,
+    dealerzip double precision,
+    prodtype text COLLATE pg_catalog."default",
+    repairedyn2 double precision,
+    medicalattn double precision,
+    vehiclestowedyn double precision
+class UsData_Clean(Base):
+        __tablename__ = 'UsData_Clean'   
+        cmplid = Column(Integer, primary_key=True,nullable=False)
+        odino  = Column(Integer)
+        mfrname= Column(String(100))
+        maketxt=Column(String(100))
+        modeltxt=Column(String(50))
+        yeartxt=Column(Integer)
+        make_name_nm=Column(String(50))
+        model_name_nm=Column(String(100))
+        unit_affected_nbr=Column(Integer)
+        system_type_etxt=Column(String(50))
+        system_type_ftxt=Column(String(50))
+        notification_type_etxt=Column(String(50))
+        notification_type_ftxt=Column(String(50))
+        comment_etxt=Column(String(2000))
+        comment_ftxt=Column(String(2000))
+        recall_date_dte=Column(Date)
+        
+    
+    
+        def __repr__(self):
+            return f"Canadian_Clean('{self.id}','{self.recall_number_num}','{self.year}','{self.manufacturer_recall_no_txt}','{self.category_etxt}','{self.category_ftxt}','{self.make_name_nm}','{self.model_name_nm}','{self.unit_affected_nbr}','{self.system_type_etxt}','{self.system_type_ftxt}','{self.notification_type_etxt}','{self.notification_type_ftxt}','{self.comment_etxt}','{self.recall_date_dte}','{self.year}')"
+
+
+
+        def __init__(self,vin_number):
+            self.recall_number_num = recall_number_num
+            self.year=year
+            self.manufacturer_recall_no_txt=manufacturer_recall_no_txt
+            self.category_etxt=category_etxt
+            self.category_ftxt=category_ftxt
+            self.make_name_nm=make_name_nm
+            self.model_name_nm=model_name_nm
+            self.unit_affected_nbr=unit_affected_nbr
+            self.system_type_etxt=system_type_etxt
+            self.system_type_ftxt=system_type_ftxt
+            self.notification_type_etxt=notification_type_etxt
+            self.notification_type_ftxt=notification_type_ftxt
+            self.comment_etxt=comment_etxt
+            self.comment_ftxt=comment_ftxt
+            self.recall_date_dte=recall_date_dte
+
+
+
+
+
+#################################################data base connection################
+            try:
+   connection = psycopg2.connect(user="postgres",
+                                  password="Wimtech2019",
+                                  host="localhost",
+                                  port="5432",
+                                  database="data_extractor")
+   cursor = connection.cursor()
+   print(connection+"asdsadsadsdasdsdasdasdadsdad")
+   postgreSQL_select_Query = "select * from mobile"
+   cursor.execute(postgreSQL_select_Query)
+   print("Selecting rows from mobile table using cursor.fetchall")
+   mobile_records = cursor.fetchall() 
+   
+   print("Print each row and it's columns values")
+   for row in mobile_records:
+       print("Id = ", row[0], )
+       print("Model = ", row[1])
+       print("Price  = ", row[2], "\n")
+except (Exception, psycopg2.Error) as error :
+    print ("Error while fetching data from PostgreSQL", error)
+finally:
+    #closing database connection.
+    if(connection):
+        cursor.close()
+        connection.close()
+        print("PostgreSQL connection is closed")

@@ -1,0 +1,223 @@
+#df=pd.read_csv("vrdb_full_monthly (6).csv",encoding='latin-1',header=0,index_col='RECALL_NUMBER_NUM')
+#df.to_sql('Canadian', engine,index_label='Column1',if_exists='append') #truncates the table
+
+#print(df.head());
+#df.to_csv(output, sep=',', header=False, index=False)
+#output.seek(0)
+#contents = output.getvalue()
+#cur.copy_from(output, 'Canadian', null="") # null values become ''
+
+
+
+
+
+
+Read from csv 
+
+
+
+
+#19950125
+
+#############################################################################
+to_datetime = lambda d: datetime.datetime.strptime(d ,'%Y%m%d')
+
+
+#to_datetime = lambda d: time.strptime(d, '%Y%m%d')
+#,converters={'faildate': to_datetime, 'datea': to_datetime,'ldate': to_datetime}
+
+dfUs=pd.read_csv("flatcmpl45.csv",encoding='latin-1',header=0,index_col='cmplid')
+print(dfUs)
+#dfUs.head(n=5)
+#engine1 = create_engine('postgresql+psycopg2://postgres:Wimtech2019@localhost/data_extractor')
+
+dfUs.to_sql('UsData', engine,index_label='cmplid',if_exists='replace')
+
+
+conn = engine.raw_connection()
+cur = conn.cursor()
+output = io.StringIO()
+
+conn.commit()
+
+
+############################################################################
+
+
+connection = engine.connect()
+result = connection.execute('select * from public."UsData" where cmplid=1')
+for row in result:
+
+    faildate=row['faildate']
+    round(faildate)
+#    print(datetime.datetime.strptime(str(faildate) ,'%Y%m%d'))
+
+    print("username:",row['faildate'])
+
+my_json=requests.get('http://api.worldweatheronline.com/premium/v1/past-weather.ashx?key=3e7b42d0ddf44d79ba813121192705&q=Toronto&format=json&date=2019-05-25').content.decode('utf8').replace("'", '"')
+json.loads(my_json)
+print(json.dumps(json.loads(my_json), indent=4, sort_keys=True))
+
+json.data.requests[0]
+connection.close()
+#############################################################################
+
+dfUs=pd.read_csv("NYPD.csv",encoding='latin-1',header=0)
+print(dfUs.head(n=5))
+#dfUs.head(n=5)
+#engine1 = create_engine('postgresql+psycopg2://postgres:Wimtech2019@localhost/data_extractor')
+
+dfUs.to_sql('NYPD', engine,if_exists='replace')
+
+
+conn = engine.raw_connection()
+
+conn.commit()
+
+
+#############################################################################
+connecting db with sql alchemy 
+
+metadata = db.MetaData()
+UsData = db.Table('UsData', metadata, autoload=True, autoload_with=engine)
+query = db.select([UsData])
+
+ResultProxy = conn.execute(query)
+print('###################################################')
+ResultSet = ResultProxy.fetchall()
+print('###################################################')
+ResultSet[:3]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Vehicle(Base):
+        __tablename__ = 'Vehicle'   
+        id = Column(Integer, primary_key=True,autoincrement=True,nullable=False)
+        vin_number = Column(String,primary_key=True)
+        
+    
+    
+        def __repr__(self):
+            return f"Vehicle('{self.id}','{self.vin_number}')"
+
+
+
+        def __init__(self,vin_number):
+            self.vin_number=vin_number
+       
+
+
+class VehicleIncident(Base):
+        __tablename__ = 'VehicleIncident'   
+        id = Column(Integer, primary_key=True,autoincrement=True,nullable=False)
+        vin_number = Column(String,primary_key=True)
+        city=Column(String,primary_key=True)
+        state=Column(String,primary_key=True)
+        country=Column(String,primary_key=True)
+        incident_date=Column(DateTime,primary_key=True)
+        batch_state=Column(String,default='1', nullable=False)
+        created_ts = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+        updated_ts = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False)
+    
+        def __repr__(self):
+            return f"VehicleIncident('{self.id}','{self.vin_number}','{self.city}','{self.state}','{self.country}','{self.incident_date}','{self.batch_state}','{self.created_ts}','{self.updated_ts})"
+
+
+        def  __init__(self,vin_number,city,state,country,incident_date,batch_state):
+            self.vin_number=vin_number
+            self.city=city
+            self.state=state
+            self.country=country
+            self.incident_date=incident_date
+            self.batch_state=batch_state
+
+
+
+
+
+
+
+
+
+
+
+
+
+class VehicleSchema(ma.ModelSchema):
+    class Meta:
+        model=Vehicle 
+# Vehicle_incident Schema 
+class VehicleIncidentSchema(ma.ModelSchema):
+    class Meta:
+        model=VehicleIncident
+        #fields =('incident_id','vin_number','city','state','incident_date','batch_state','created_ts','updated_ts')
+
+#Init Schema
+vehicle_schema=VehicleSchema(strict=True)
+vehicleincident_schema=VehicleIncidentSchema(strict=True)
+vehicleincidents_schema=VehicleIncidentSchema(many=True,strict=True)
+
+@app.route('/vehicle/<id>/<vin_number>',methods=['GET'])
+def get_vehicle(id,vin_number):
+    all_vehicle=session.query(Vehicle).filter(and_(Vehicle.vin_number==vin_number,Vehicle.id==id)).first()
+    print(all_vehicle.vin_number)
+    result=vehicle_schema.dump(all_vehicle)
+    return jsonify(result.data)
+
+@app.route('/vehicleincidents',methods=['GET'])
+def get_vehicleincidents():
+    all_vehicleincidents=session.query(VehicleIncident).all()
+    result=vehicleincidents_schema.dump(all_vehicleincidents)
+    print(result)
+    return jsonify(result.data)
+ 
+ #,vin_number,city,state,incident_date,batch_state
+ #/<vin_number>/<city>/<state>/<incident_date>/<batch_state>
+@app.route('/vehicleincident/<id>/<vin_number>/<city>/<state>/<incident_date>/<batch_state>',methods=['GET'])
+def get_vehicleincident(id,vin_number,city,state,incident_date,batch_state):
+    #vehicleincident=VehicleIncident.query.get({"id": id, "vin_number": vin_number,"city":city,"state":state,"incident_date":incident_date,"batch_state":batch_state})
+    
+    vehicleincident=db.session.query(VehicleIncident()).filter(and_(db.VehicleIncident.id==id,db.VehicleIncident.vin_number==vin_number, db.VehicleIncident.city==city, db.VehicleIncident.state==state, db.VehicleIncident.incident_date==incident_date,db.VehicleIncident.batch_state==batch_state))
+    return vehicleincident_schema.jsonify(vehicleincident)
+
+
+
+
